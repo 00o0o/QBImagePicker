@@ -13,6 +13,7 @@
 #import "QBImagePickerController.h"
 #import "QBAssetCell.h"
 #import "QBVideoIndicatorView.h"
+#import "QBPopupView.h"
 
 static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     return CGSizeMake(size.width * scale, size.height * scale);
@@ -20,7 +21,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 @interface QBImagePickerController (Private)
 
-@property (nonatomic, strong) NSMutableOrderedSet *selectedAssets;
 @property (nonatomic, strong) NSBundle *assetBundle;
 
 @end
@@ -55,17 +55,26 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 @end
 
-@interface QBAssetsViewController () <PHPhotoLibraryChangeObserver, UICollectionViewDelegateFlowLayout>
+@interface QBAssetsViewController () <PHPhotoLibraryChangeObserver, UICollectionViewDelegateFlowLayout, UITableViewDelegate, UITableViewDataSource, UIGestureRecognizerDelegate>
 
 @property (nonatomic, strong) IBOutlet UIBarButtonItem *doneButton;
+@property (weak, nonatomic) IBOutlet UIBarButtonItem *cancelButton;
 
 @property (nonatomic, strong) PHFetchResult *fetchResult;
+
+@property (nonatomic, copy) NSArray *fetchResults;
+@property (nonatomic, copy) NSArray *assetCollections;
 
 @property (nonatomic, strong) PHCachingImageManager *imageManager;
 @property (nonatomic, assign) CGRect previousPreheatRect;
 
 @property (nonatomic, assign) BOOL disableScrollToBottom;
 @property (nonatomic, strong) NSIndexPath *lastSelectedItemIndexPath;
+
+@property (nonatomic, strong) UIView *albumsMaskView;
+@property (nonatomic, strong) UITableView *albumsTableView;
+
+@property (nonatomic, strong) UIButton *titleButton;
 
 @end
 
@@ -75,11 +84,34 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 {
     [super viewDidLoad];
     
-    [self setUpToolbarItems];
-    [self resetCachedAssets];
+    self.view.backgroundColor = [UIColor whiteColor];
     
-    // Register observer
-    [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
+    _titleButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    _titleButton.titleLabel.font = [UIFont systemFontOfSize:18.0];
+    [_titleButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    self.navigationItem.titleView = _titleButton;
+    
+    if([self.imagePickerController photoLibraryAuthorizationStatus]) {
+        {
+            // Fetch user albums and smart albums
+            PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAny options:nil];
+            PHFetchResult *userAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAny options:nil];
+            self.fetchResults = @[smartAlbums, userAlbums];
+            
+            [self updateAssetCollections];
+        }
+        
+        [self setUpToolbarItems];
+        [self setUpAlbumsMaskView];
+        [self resetCachedAssets];
+        
+        // Register observer
+        [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
+    }else {
+        self.collectionView.hidden = YES;
+        [[[UIAlertView alloc] initWithTitle:nil message:@"请在iPhone的“设置->隐私->照片”中打开本应用的访问权限" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil] show];
+    }
+    
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -87,7 +119,15 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     [super viewWillAppear:animated];
     
     // Configure navigation item
-    self.navigationItem.title = self.assetCollection.localizedTitle;
+    if([self.imagePickerController photoLibraryAuthorizationStatus]) {
+        [self updateTitle];
+        [_titleButton addTarget:self action:@selector(showAlbums) forControlEvents:UIControlEventTouchUpInside];
+        
+    }else {
+        NSString *title = NSLocalizedStringFromTableInBundle(@"assets.title", @"QBImagePicker", self.imagePickerController.assetBundle, nil);
+        [_titleButton setTitle:title forState:UIControlStateNormal];
+        [_titleButton sizeToFit];
+    }
     self.navigationItem.prompt = self.imagePickerController.prompt;
     
     // Configure collection view
@@ -103,6 +143,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     [self updateDoneButtonState];
     [self updateSelectionInfo];
     
+    [self.collectionView reloadData];
     // Scroll to bottom
     if (self.fetchResult.count > 0 && self.isMovingToParentViewController && !self.disableScrollToBottom) {
         NSIndexPath *indexPath = [NSIndexPath indexPathForItem:(self.fetchResult.count - 1) inSection:0];
@@ -123,7 +164,9 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     
     self.disableScrollToBottom = NO;
     
-    [self updateCachedAssets];
+    if([self.imagePickerController photoLibraryAuthorizationStatus]) {
+        [self updateCachedAssets];
+    }
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
@@ -142,8 +185,11 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (void)dealloc
 {
+    NSLog(@"%@ dealloced.", self);
     // Deregister observer
-    [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
+    if([self.imagePickerController photoLibraryAuthorizationStatus]) {
+        [[PHPhotoLibrary sharedPhotoLibrary] unregisterChangeObserver:self];
+    }
 }
 
 
@@ -174,6 +220,11 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 
 #pragma mark - Actions
+- (IBAction)cancel:(id)sender {
+    if([self.imagePickerController.delegate respondsToSelector:@selector(qb_imagePickerControllerDidCancel:)]) {
+        [self.imagePickerController.delegate qb_imagePickerControllerDidCancel:self.imagePickerController];
+    }
+}
 
 - (IBAction)done:(id)sender
 {
@@ -183,6 +234,62 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     }
 }
 
+- (void)showAlbums {
+    [[UIApplication sharedApplication].keyWindow addSubview:_albumsMaskView];
+    [UIView animateWithDuration:0.2 animations:^{
+        _albumsMaskView.alpha = 1.0;
+    } completion:^(BOOL finished) {
+        
+    }];
+}
+
+- (void)hideAlbums {
+    [UIView animateWithDuration:0.2 animations:^{
+        _albumsMaskView.alpha = 0.0;
+    } completion:^(BOOL finished) {
+        [_albumsMaskView removeFromSuperview];
+    }];
+}
+
+- (void)updateTitle {
+    NSString *title = self.assetCollection.localizedTitle;
+    UIImage *image = [UIImage imageNamed:@"qbarrow_down"];
+    
+    [_titleButton setTitle:title forState:UIControlStateNormal];
+    [_titleButton setImage:image forState:UIControlStateNormal];
+    [_titleButton sizeToFit];
+    
+    //CGFloat titleWidth = [title sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:18.0]}].width;
+    //CGFloat imageWidth = image.size.width;
+    
+    //_titleButton.imageEdgeInsets = UIEdgeInsetsMake(0.0, titleWidth * 2, 0.0, 0.0);
+    //_titleButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, -(imageWidth * 2), 0.0, 0.0);
+}
+
+#pragma mark - setupViews
+- (void)setUpAlbumsMaskView {
+    _albumsMaskView = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    _albumsMaskView.alpha = 0.0;
+    
+    UITapGestureRecognizer *gesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(hideAlbums)];
+    gesture.delegate = self;
+    [_albumsMaskView addGestureRecognizer:gesture];
+    
+    QBPopupView *popup = [[QBPopupView alloc] initWithFrame:CGRectMake(0.0, 0.0, 180.0, 220.0)];
+    popup.center = CGPointMake([UIScreen mainScreen].bounds.size.width / 2, popup.center.y + 56.0);
+    popup.bodyColor = [UIColor lightGrayColor];
+    [_albumsMaskView addSubview:popup];
+    
+    _albumsTableView = [[UITableView alloc] initWithFrame:CGRectMake(0.0, 15.0, CGRectGetWidth(popup.frame), CGRectGetHeight(popup.frame)-25.0)];
+    _albumsTableView.backgroundColor = [UIColor lightGrayColor];
+    _albumsTableView.delegate = self;
+    _albumsTableView.dataSource = self;
+    _albumsTableView.showsVerticalScrollIndicator = NO;
+    _albumsTableView.showsHorizontalScrollIndicator = NO;
+    _albumsTableView.tableFooterView = [UIView new];
+    [_albumsTableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"AlbumsCell"];
+    [popup addSubview:_albumsTableView];
+}
 
 #pragma mark - Toolbar
 
@@ -222,6 +329,52 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     }
 }
 
+#pragma mark - Fetching Asset Collections
+
+- (void)updateAssetCollections
+{
+    // Filter albums
+    NSArray *assetCollectionSubtypes = self.imagePickerController.assetCollectionSubtypes;
+    NSMutableDictionary *smartAlbums = [NSMutableDictionary dictionaryWithCapacity:assetCollectionSubtypes.count];
+    NSMutableArray *userAlbums = [NSMutableArray array];
+    
+    for (PHFetchResult *fetchResult in self.fetchResults) {
+        [fetchResult enumerateObjectsUsingBlock:^(PHAssetCollection *assetCollection, NSUInteger index, BOOL *stop) {
+            PHAssetCollectionSubtype subtype = assetCollection.assetCollectionSubtype;
+            
+            if (subtype == PHAssetCollectionSubtypeAlbumRegular) {
+                [userAlbums addObject:assetCollection];
+            } else if ([assetCollectionSubtypes containsObject:@(subtype)]) {
+                if (!smartAlbums[@(subtype)]) {
+                    smartAlbums[@(subtype)] = [NSMutableArray array];
+                }
+                [smartAlbums[@(subtype)] addObject:assetCollection];
+            }
+        }];
+    }
+    
+    NSMutableArray *assetCollections = [NSMutableArray array];
+    
+    // Fetch smart albums
+    for (NSNumber *assetCollectionSubtype in assetCollectionSubtypes) {
+        NSArray *collections = smartAlbums[assetCollectionSubtype];
+        
+        if (collections) {
+            [assetCollections addObjectsFromArray:collections];
+        }
+    }
+    
+    // Fetch user albums
+    [userAlbums enumerateObjectsUsingBlock:^(PHAssetCollection *assetCollection, NSUInteger index, BOOL *stop) {
+        [assetCollections addObject:assetCollection];
+    }];
+    
+    self.assetCollections = assetCollections;
+    if(self.assetCollections.count) {
+        self.assetCollection = self.assetCollections[0];
+        [self.collectionView reloadData];
+    }
+}
 
 #pragma mark - Fetching Assets
 
@@ -229,7 +382,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 {
     if (self.assetCollection) {
         PHFetchOptions *options = [PHFetchOptions new];
-        options.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
         
         switch (self.imagePickerController.mediaType) {
             case QBImagePickerMediaTypeImage:
@@ -319,7 +471,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         NSArray *assetsToStopCaching = [self assetsAtIndexPaths:removedIndexPaths];
         
         CGSize itemSize = [(UICollectionViewFlowLayout *)self.collectionViewLayout itemSize];
-        CGSize targetSize = CGSizeScale(itemSize, self.traitCollection.displayScale);
+        CGSize targetSize = CGSizeScale(itemSize, [[UIScreen mainScreen] scale]);
         
         [self.imageManager startCachingImagesForAssets:assetsToStartCaching
                                             targetSize:targetSize
@@ -423,7 +575,9 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView
 {
-    [self updateCachedAssets];
+    if([self.imagePickerController photoLibraryAuthorizationStatus]) {
+        [self updateCachedAssets];
+    }
 }
 
 
@@ -448,7 +602,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     // Image
     PHAsset *asset = self.fetchResult[indexPath.item];
     CGSize itemSize = [(UICollectionViewFlowLayout *)collectionView.collectionViewLayout itemSize];
-    CGSize targetSize = CGSizeScale(itemSize, self.traitCollection.displayScale);
+    CGSize targetSize = CGSizeScale(itemSize, [[UIScreen mainScreen] scale]);
     
     [self.imageManager requestImageForAsset:asset
                                  targetSize:targetSize
@@ -658,4 +812,41 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     return CGSizeMake(width, width);
 }
 
+#pragma mark - UITableViewDataSource
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"AlbumsCell" forIndexPath:indexPath];
+    cell.backgroundColor = [UIColor lightGrayColor];
+
+    PHAssetCollection *assetCollection = self.assetCollections[indexPath.row];
+    cell.textLabel.text = assetCollection.localizedTitle;
+    
+    return cell;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return self.assetCollections.count;
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 1;
+}
+
+#pragma mark - UITableViewDelegate
+- (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:NO];
+    
+    [self hideAlbums];
+    PHAssetCollection *assetCollection = self.assetCollections[indexPath.row];
+    self.assetCollection = assetCollection;
+    
+}
+
+#pragma mark - UIGestureRecognizerDelegate
+- (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
+    if(touch.view == _albumsTableView) {
+        return YES;
+    }
+    
+    return NO;
+}
 @end

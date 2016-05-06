@@ -8,15 +8,15 @@
 
 #import "QBImagePickerController.h"
 #import <Photos/Photos.h>
+#import <AssetsLibrary/AssetsLibrary.h>
 
 // ViewControllers
-#import "QBAlbumsViewController.h"
+#import "QBAssetsViewController.h"
 
 @interface QBImagePickerController ()
 
-@property (nonatomic, strong) UINavigationController *albumsNavigationController;
+@property (nonatomic, strong, readwrite) UINavigationController *assetsNavigationController;
 
-@property (nonatomic, strong) NSMutableOrderedSet *selectedAssets;
 @property (nonatomic, strong) NSBundle *assetBundle;
 
 @end
@@ -40,7 +40,7 @@
         self.numberOfColumnsInPortrait = 4;
         self.numberOfColumnsInLandscape = 7;
         
-        self.selectedAssets = [NSMutableOrderedSet orderedSet];
+        _selectedAssets = [NSMutableOrderedSet orderedSet];
         
         // Get asset bundle
         self.assetBundle = [NSBundle bundleForClass:[self class]];
@@ -49,21 +49,25 @@
             self.assetBundle = [NSBundle bundleWithPath:bundlePath];
         }
         
-        [self setUpAlbumsViewController];
+        [self setUpAssetsViewController];
         
         // Set instance
-        QBAlbumsViewController *albumsViewController = (QBAlbumsViewController *)self.albumsNavigationController.topViewController;
-        albumsViewController.imagePickerController = self;
+        QBAssetsViewController *assetsViewController = (QBAssetsViewController *)self.assetsNavigationController.topViewController;
+        assetsViewController.imagePickerController = self;
     }
     
     return self;
 }
 
-- (void)setUpAlbumsViewController
+- (void)dealloc {
+    NSLog(@"%@ dealloced.", self);
+}
+
+- (void)setUpAssetsViewController
 {
     // Add QBAlbumsViewController as a child
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"QBImagePicker" bundle:self.assetBundle];
-    UINavigationController *navigationController = [storyboard instantiateViewControllerWithIdentifier:@"QBAlbumsNavigationController"];
+    UINavigationController *navigationController = [storyboard instantiateViewControllerWithIdentifier:@"QBAssetsNavigationController"];
     
     [self addChildViewController:navigationController];
     
@@ -72,7 +76,31 @@
     
     [navigationController didMoveToParentViewController:self];
     
-    self.albumsNavigationController = navigationController;
+    self.assetsNavigationController = navigationController;
+}
+
+- (BOOL)photoLibraryAuthorizationStatus {
+    ALAuthorizationStatus status = [ALAssetsLibrary authorizationStatus];
+    if(status == ALAuthorizationStatusRestricted || status == ALAuthorizationStatusDenied) {
+        return NO;
+    }
+    return YES;
+}
+
+- (BOOL)cameraAuthorizationStatus {
+    if (![UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera]) {
+        return NO;
+    }
+    
+    if ([AVCaptureDevice respondsToSelector:@selector(authorizationStatusForMediaType:)]) {
+        AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+        if (AVAuthorizationStatusDenied == authStatus ||
+            AVAuthorizationStatusRestricted == authStatus) {
+            return NO;
+        }
+    }
+    
+    return YES;
 }
 
 @end

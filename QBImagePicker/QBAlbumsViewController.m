@@ -22,7 +22,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 @interface QBImagePickerController (Private)
 
-@property (nonatomic, strong) NSMutableOrderedSet *selectedAssets;
 @property (nonatomic, strong) NSBundle *assetBundle;
 
 @end
@@ -34,6 +33,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 @property (nonatomic, copy) NSArray *fetchResults;
 @property (nonatomic, copy) NSArray *assetCollections;
 
+@property (nonatomic, strong) NSBundle *assetBundle;
+
 @end
 
 @implementation QBAlbumsViewController
@@ -41,6 +42,12 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    self.assetBundle = [NSBundle bundleForClass:[self class]];
+    NSString *bundlePath = [self.assetBundle pathForResource:@"QBImagePicker" ofType:@"bundle"];
+    if (bundlePath) {
+        self.assetBundle = [NSBundle bundleWithPath:bundlePath];
+    }
     
     [self setUpToolbarItems];
     
@@ -152,8 +159,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (void)updateAssetCollections
 {
-    NSMutableArray *assetCollections = [NSMutableArray array];
-    
     // Filter albums
     NSArray *assetCollectionSubtypes = self.imagePickerController.assetCollectionSubtypes;
     NSMutableDictionary *smartAlbums = [NSMutableDictionary dictionaryWithCapacity:assetCollectionSubtypes.count];
@@ -161,20 +166,27 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     
     for (PHFetchResult *fetchResult in self.fetchResults) {
         [fetchResult enumerateObjectsUsingBlock:^(PHAssetCollection *assetCollection, NSUInteger index, BOOL *stop) {
-            if (assetCollection.assetCollectionSubtype == PHAssetCollectionSubtypeAlbumRegular) {
+            PHAssetCollectionSubtype subtype = assetCollection.assetCollectionSubtype;
+            
+            if (subtype == PHAssetCollectionSubtypeAlbumRegular) {
                 [userAlbums addObject:assetCollection];
-            } else if ([assetCollectionSubtypes containsObject:@(assetCollection.assetCollectionSubtype)]) {
-                smartAlbums[@(assetCollection.assetCollectionSubtype)] = assetCollection;
+            } else if ([assetCollectionSubtypes containsObject:@(subtype)]) {
+                if (!smartAlbums[@(subtype)]) {
+                    smartAlbums[@(subtype)] = [NSMutableArray array];
+                }
+                [smartAlbums[@(subtype)] addObject:assetCollection];
             }
         }];
     }
     
+    NSMutableArray *assetCollections = [NSMutableArray array];
+
     // Fetch smart albums
     for (NSNumber *assetCollectionSubtype in assetCollectionSubtypes) {
-        PHAssetCollection *assetCollection = smartAlbums[assetCollectionSubtype];
+        NSArray *collections = smartAlbums[assetCollectionSubtype];
         
-        if (assetCollection) {
-            [assetCollections addObject:assetCollection];
+        if (collections) {
+            [assetCollections addObjectsFromArray:collections];
         }
     }
     
@@ -184,6 +196,14 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     }];
     
     self.assetCollections = assetCollections;
+    
+    if(self.assetCollections.count) {
+        __weak typeof(self)weakSelf = self;
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            NSIndexPath *indexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+            [weakSelf tableView:weakSelf.tableView didSelectRowAtIndexPath:indexPath];
+        });
+    }
 }
 
 - (UIImage *)placeholderImageWithSize:(CGSize)size
@@ -272,13 +292,12 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 {
     QBAlbumCell *cell = [tableView dequeueReusableCellWithIdentifier:@"AlbumCell" forIndexPath:indexPath];
     cell.tag = indexPath.row;
-    cell.borderWidth = 1.0 / self.traitCollection.displayScale;
+    cell.borderWidth = 1.0 / [[UIScreen mainScreen] scale];
     
     // Thumbnail
     PHAssetCollection *assetCollection = self.assetCollections[indexPath.row];
     
     PHFetchOptions *options = [PHFetchOptions new];
-    options.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"creationDate" ascending:YES]];
     
     switch (self.imagePickerController.mediaType) {
         case QBImagePickerMediaTypeImage:
@@ -300,7 +319,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         cell.imageView3.hidden = NO;
         
         [imageManager requestImageForAsset:fetchResult[fetchResult.count - 3]
-                                targetSize:CGSizeScale(cell.imageView3.frame.size, self.traitCollection.displayScale)
+                                targetSize:CGSizeScale(cell.imageView3.frame.size, [[UIScreen mainScreen] scale])
                                contentMode:PHImageContentModeAspectFill
                                    options:nil
                              resultHandler:^(UIImage *result, NSDictionary *info) {
@@ -316,7 +335,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         cell.imageView2.hidden = NO;
         
         [imageManager requestImageForAsset:fetchResult[fetchResult.count - 2]
-                                targetSize:CGSizeScale(cell.imageView2.frame.size, self.traitCollection.displayScale)
+                                targetSize:CGSizeScale(cell.imageView2.frame.size, [[UIScreen mainScreen] scale])
                                contentMode:PHImageContentModeAspectFill
                                    options:nil
                              resultHandler:^(UIImage *result, NSDictionary *info) {
@@ -330,7 +349,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     
     if (fetchResult.count >= 1) {
         [imageManager requestImageForAsset:fetchResult[fetchResult.count - 1]
-                                targetSize:CGSizeScale(cell.imageView1.frame.size, self.traitCollection.displayScale)
+                                targetSize:CGSizeScale(cell.imageView1.frame.size, [[UIScreen mainScreen] scale])
                                contentMode:PHImageContentModeAspectFill
                                    options:nil
                              resultHandler:^(UIImage *result, NSDictionary *info) {
@@ -360,6 +379,13 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     return cell;
 }
 
+#pragma mark - UITableViewDelegate
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    QBAssetsViewController *assetsViewController = [[UIStoryboard storyboardWithName:@"QBImagePicker" bundle:self.assetBundle] instantiateViewControllerWithIdentifier:@"QBAssetsViewController"];
+    assetsViewController.imagePickerController = self.imagePickerController;
+    assetsViewController.assetCollection = self.assetCollections[indexPath.row];
+    [self.navigationController pushViewController:assetsViewController animated:YES];
+}
 
 #pragma mark - PHPhotoLibraryChangeObserver
 

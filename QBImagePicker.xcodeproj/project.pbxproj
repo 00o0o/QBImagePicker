@@ -38,6 +38,12 @@
 		AAF1CA301ACE6E46005F6295 /* QBAssetsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = AAF1CA2E1ACE6E46005F6295 /* QBAssetsViewController.m */; };
 		AAF1CA331ACE6FB5005F6295 /* QBAssetCell.h in Headers */ = {isa = PBXBuildFile; fileRef = AAF1CA311ACE6FB5005F6295 /* QBAssetCell.h */; };
 		AAF1CA341ACE6FB5005F6295 /* QBAssetCell.m in Sources */ = {isa = PBXBuildFile; fileRef = AAF1CA321ACE6FB5005F6295 /* QBAssetCell.m */; };
+		B37AC57E1CDCEFFE00F48EBD /* qbarrow_down@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B37AC57A1CDCEFFE00F48EBD /* qbarrow_down@2x.png */; };
+		B37AC57F1CDCEFFE00F48EBD /* qbarrow_down@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = B37AC57B1CDCEFFE00F48EBD /* qbarrow_down@3x.png */; };
+		B37AC5801CDCEFFE00F48EBD /* qbarrow_up@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = B37AC57C1CDCEFFE00F48EBD /* qbarrow_up@2x.png */; };
+		B37AC5811CDCEFFE00F48EBD /* qbarrow_up@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = B37AC57D1CDCEFFE00F48EBD /* qbarrow_up@3x.png */; };
+		B3D3B6781CDCC4ED00725B26 /* QBPopupView.h in Headers */ = {isa = PBXBuildFile; fileRef = B3D3B6761CDCC4ED00725B26 /* QBPopupView.h */; };
+		B3D3B6791CDCC4ED00725B26 /* QBPopupView.m in Sources */ = {isa = PBXBuildFile; fileRef = B3D3B6771CDCC4ED00725B26 /* QBPopupView.m */; };
 		E521B0A21B01D9300079461F /* QBImagePicker.strings in Resources */ = {isa = PBXBuildFile; fileRef = AAF1CA3F1ACE8918005F6295 /* QBImagePicker.strings */; };
 /* End PBXBuildFile section */
 
@@ -81,6 +87,7 @@
 
 /* Begin PBXFileReference section */
 		07A50A481B331A840010E048 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/QBImagePicker.strings; sourceTree = "<group>"; };
+		74BB93661B2CE91A0044EB60 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/QBImagePicker.strings; sourceTree = "<group>"; };
 		790A850D1AE7D4D9008E2A80 /* QBSlomoIconView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QBSlomoIconView.h; sourceTree = "<group>"; };
 		790A850E1AE7D4D9008E2A80 /* QBSlomoIconView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QBSlomoIconView.m; sourceTree = "<group>"; };
 		AA3AD06D1ACF9A3A00BF523E /* QBVideoIconView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QBVideoIconView.h; sourceTree = "<group>"; };
@@ -121,8 +128,14 @@
 		AAF1CA321ACE6FB5005F6295 /* QBAssetCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QBAssetCell.m; sourceTree = "<group>"; };
 		AAF1CA3E1ACE8918005F6295 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/QBImagePicker.strings; sourceTree = "<group>"; };
 		AAF1CA401ACE8A8B005F6295 /* ja */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ja; path = ja.lproj/QBImagePicker.strings; sourceTree = "<group>"; };
+		B37AC57A1CDCEFFE00F48EBD /* qbarrow_down@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qbarrow_down@2x.png"; sourceTree = "<group>"; };
+		B37AC57B1CDCEFFE00F48EBD /* qbarrow_down@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qbarrow_down@3x.png"; sourceTree = "<group>"; };
+		B37AC57C1CDCEFFE00F48EBD /* qbarrow_up@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qbarrow_up@2x.png"; sourceTree = "<group>"; };
+		B37AC57D1CDCEFFE00F48EBD /* qbarrow_up@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "qbarrow_up@3x.png"; sourceTree = "<group>"; };
+		B3D3B6761CDCC4ED00725B26 /* QBPopupView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QBPopupView.h; sourceTree = "<group>"; };
+		B3D3B6771CDCC4ED00725B26 /* QBPopupView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QBPopupView.m; sourceTree = "<group>"; };
 		E521B0A11B01D6810079461F /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/QBImagePicker.strings"; sourceTree = "<group>"; };
-		74BB93661B2CE91A0044EB60 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/QBImagePicker.strings; sourceTree = "<group>"; };
+		F167DB441C086AB90045AD5B /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/QBImagePicker.strings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -174,6 +187,8 @@
 				790A850E1AE7D4D9008E2A80 /* QBSlomoIconView.m */,
 				AA3AD0711ACFA06700BF523E /* QBVideoIndicatorView.h */,
 				AA3AD0721ACFA06700BF523E /* QBVideoIndicatorView.m */,
+				B3D3B6761CDCC4ED00725B26 /* QBPopupView.h */,
+				B3D3B6771CDCC4ED00725B26 /* QBPopupView.m */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -302,6 +317,10 @@
 		AAF1CA241ACE5665005F6295 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				B37AC57A1CDCEFFE00F48EBD /* qbarrow_down@2x.png */,
+				B37AC57B1CDCEFFE00F48EBD /* qbarrow_down@3x.png */,
+				B37AC57C1CDCEFFE00F48EBD /* qbarrow_up@2x.png */,
+				B37AC57D1CDCEFFE00F48EBD /* qbarrow_up@3x.png */,
 				AAF1CA221ACE5598005F6295 /* QBImagePicker.storyboard */,
 				AAF1CA3F1ACE8918005F6295 /* QBImagePicker.strings */,
 			);
@@ -318,6 +337,7 @@
 				790A850F1AE7D4D9008E2A80 /* QBSlomoIconView.h in Headers */,
 				AA3AD0731ACFA06700BF523E /* QBVideoIndicatorView.h in Headers */,
 				AAF1CA331ACE6FB5005F6295 /* QBAssetCell.h in Headers */,
+				B3D3B6781CDCC4ED00725B26 /* QBPopupView.h in Headers */,
 				AAF1CA2F1ACE6E46005F6295 /* QBAssetsViewController.h in Headers */,
 				AAF1CA1A1ACE5467005F6295 /* QBAlbumCell.h in Headers */,
 				AAA8FE5B1ACDA554002A9710 /* QBAlbumsViewController.h in Headers */,
@@ -410,7 +430,7 @@
 		AAA8FDFA1ACDA079002A9710 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0620;
+				LastUpgradeCheck = 0710;
 				ORGANIZATIONNAME = "Katsuma Tanaka";
 				TargetAttributes = {
 					AAA8FE021ACDA079002A9710 = {
@@ -439,6 +459,7 @@
 				"zh-Hans",
 				es,
 				de,
+				pl,
 			);
 			mainGroup = AAA8FDF91ACDA079002A9710;
 			productRefGroup = AAA8FE041ACDA079002A9710 /* Products */;
@@ -459,6 +480,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				E521B0A21B01D9300079461F /* QBImagePicker.strings in Resources */,
+				B37AC57F1CDCEFFE00F48EBD /* qbarrow_down@3x.png in Resources */,
+				B37AC5801CDCEFFE00F48EBD /* qbarrow_up@2x.png in Resources */,
+				B37AC57E1CDCEFFE00F48EBD /* qbarrow_down@2x.png in Resources */,
+				B37AC5811CDCEFFE00F48EBD /* qbarrow_up@3x.png in Resources */,
 				AAF1CA231ACE5598005F6295 /* QBImagePicker.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -498,6 +523,7 @@
 				AA3AD0701ACF9A3A00BF523E /* QBVideoIconView.m in Sources */,
 				790A85101AE7D4D9008E2A80 /* QBSlomoIconView.m in Sources */,
 				AABBF0911ACEDDFF003188A3 /* QBCheckmarkView.m in Sources */,
+				B3D3B6791CDCC4ED00725B26 /* QBPopupView.m in Sources */,
 				AAF1CA301ACE6E46005F6295 /* QBAssetsViewController.m in Sources */,
 				AAF1CA1B1ACE5467005F6295 /* QBAlbumCell.m in Sources */,
 				AAA8FE221ACDA090002A9710 /* QBImagePickerController.m in Sources */,
@@ -576,7 +602,8 @@
 				AAF1CA401ACE8A8B005F6295 /* ja */,
 				E521B0A11B01D6810079461F /* zh-Hans */,
 				07A50A481B331A840010E048 /* es */,
-				74BB93661B2CE91A0044EB60 /* de */
+				74BB93661B2CE91A0044EB60 /* de */,
+				F167DB441C086AB90045AD5B /* pl */,
 			);
 			name = QBImagePicker.strings;
 			sourceTree = "<group>";
@@ -601,10 +628,12 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -647,6 +676,7 @@
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
@@ -680,6 +710,7 @@
 				INFOPLIST_FILE = QBImagePicker/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "jp.questbeat.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -695,6 +726,7 @@
 				INFOPLIST_FILE = QBImagePicker/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "jp.questbeat.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -703,16 +735,14 @@
 		AAA8FE1D1ACDA079002A9710 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = QBImagePickerTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "jp.questbeat.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -720,12 +750,10 @@
 		AAA8FE1E1ACDA079002A9710 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = QBImagePickerTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "jp.questbeat.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -740,6 +768,7 @@
 				);
 				INFOPLIST_FILE = QBImagePickerDemo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "jp.questbeat.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -750,6 +779,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = QBImagePickerDemo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "jp.questbeat.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -758,10 +788,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -769,6 +795,7 @@
 				INFOPLIST_FILE = QBImagePickerDemoTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "jp.questbeat.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/QBImagePickerDemo.app/QBImagePickerDemo";
 			};
@@ -778,13 +805,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(SDKROOT)/Developer/Library/Frameworks",
-					"$(inherited)",
-				);
 				INFOPLIST_FILE = QBImagePickerDemoTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "jp.questbeat.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/QBImagePickerDemo.app/QBImagePickerDemo";
 			};
