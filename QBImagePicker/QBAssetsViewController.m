@@ -93,12 +93,18 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     
     if([self.imagePickerController photoLibraryAuthorizationStatus]) {
         {
+            [_titleButton addTarget:self action:@selector(showAlbums) forControlEvents:UIControlEventTouchUpInside];
+            
             // Fetch user albums and smart albums
             PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAny options:nil];
             PHFetchResult *userAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeAlbum subtype:PHAssetCollectionSubtypeAny options:nil];
             self.fetchResults = @[smartAlbums, userAlbums];
             
             [self updateAssetCollections];
+            if(self.assetCollections.count) {
+                self.assetCollection = self.assetCollections.firstObject;
+                [self.collectionView reloadData];
+            }
         }
         
         [self setUpToolbarItems];
@@ -121,8 +127,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     // Configure navigation item
     if([self.imagePickerController photoLibraryAuthorizationStatus]) {
         [self updateTitle];
-        [_titleButton addTarget:self action:@selector(showAlbums) forControlEvents:UIControlEventTouchUpInside];
-        
     }else {
         NSString *title = NSLocalizedStringFromTableInBundle(@"assets.title", @"QBImagePicker", self.imagePickerController.assetBundle, nil);
         [_titleButton setTitle:title forState:UIControlStateNormal];
@@ -199,6 +203,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 {
     _assetCollection = assetCollection;
     
+    [self updateTitle];
+    
     [self updateFetchRequest];
     [self.collectionView reloadData];
 }
@@ -235,7 +241,12 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 }
 
 - (void)showAlbums {
-    [[UIApplication sharedApplication].keyWindow addSubview:_albumsMaskView];
+    if(_titleButton.selected) {
+        return;
+    }
+    _titleButton.selected = YES;
+    
+    [self.view addSubview:_albumsMaskView];
     [UIView animateWithDuration:0.2 animations:^{
         _albumsMaskView.alpha = 1.0;
     } completion:^(BOOL finished) {
@@ -244,6 +255,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 }
 
 - (void)hideAlbums {
+    _titleButton.selected = NO;
+    
     [UIView animateWithDuration:0.2 animations:^{
         _albumsMaskView.alpha = 0.0;
     } completion:^(BOOL finished) {
@@ -253,22 +266,28 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (void)updateTitle {
     NSString *title = self.assetCollection.localizedTitle;
-    UIImage *image = [UIImage imageNamed:@"qbarrow_down"];
+    UIImage *image = [UIImage imageNamed:@"qbarrow_up" inBundle:self.imagePickerController.assetBundle compatibleWithTraitCollection:nil];
+    UIImage *image2 = [UIImage imageNamed:@"qbarrow_down" inBundle:self.imagePickerController.assetBundle compatibleWithTraitCollection:nil];
     
     [_titleButton setTitle:title forState:UIControlStateNormal];
     [_titleButton setImage:image forState:UIControlStateNormal];
+    [_titleButton setImage:image2 forState:UIControlStateSelected];
     [_titleButton sizeToFit];
+
     
-    //CGFloat titleWidth = [title sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:18.0]}].width;
-    //CGFloat imageWidth = image.size.width;
+    CGFloat titleWidth = [title sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:18.0]}].width;
+    CGFloat imageWidth = image.size.width;
+
+    _titleButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, -(imageWidth * 2), 0.0, 0.0);
+    _titleButton.imageEdgeInsets = UIEdgeInsetsMake(0.0, titleWidth, 0.0, 0.0);
     
-    //_titleButton.imageEdgeInsets = UIEdgeInsetsMake(0.0, titleWidth * 2, 0.0, 0.0);
-    //_titleButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, -(imageWidth * 2), 0.0, 0.0);
+    
 }
 
 #pragma mark - setupViews
 - (void)setUpAlbumsMaskView {
-    _albumsMaskView = [[UIView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    _albumsMaskView = [[UIView alloc] initWithFrame:self.view.bounds];
+    _albumsMaskView.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.2];
     _albumsMaskView.alpha = 0.0;
     
     UITapGestureRecognizer *gesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(hideAlbums)];
@@ -276,17 +295,16 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     [_albumsMaskView addGestureRecognizer:gesture];
     
     QBPopupView *popup = [[QBPopupView alloc] initWithFrame:CGRectMake(0.0, 0.0, 180.0, 220.0)];
-    popup.center = CGPointMake([UIScreen mainScreen].bounds.size.width / 2, popup.center.y + 56.0);
-    popup.bodyColor = [UIColor lightGrayColor];
+    popup.center = CGPointMake([UIScreen mainScreen].bounds.size.width / 2, popup.center.y + 65.0);
     [_albumsMaskView addSubview:popup];
     
-    _albumsTableView = [[UITableView alloc] initWithFrame:CGRectMake(0.0, 15.0, CGRectGetWidth(popup.frame), CGRectGetHeight(popup.frame)-25.0)];
-    _albumsTableView.backgroundColor = [UIColor lightGrayColor];
+    _albumsTableView = [[UITableView alloc] initWithFrame:CGRectMake(0.0, 15.0, CGRectGetWidth(popup.frame), CGRectGetHeight(popup.frame)-22.0)];
     _albumsTableView.delegate = self;
     _albumsTableView.dataSource = self;
     _albumsTableView.showsVerticalScrollIndicator = NO;
     _albumsTableView.showsHorizontalScrollIndicator = NO;
     _albumsTableView.tableFooterView = [UIView new];
+    _albumsTableView.rowHeight = 40.0;
     [_albumsTableView registerClass:[UITableViewCell class] forCellReuseIdentifier:@"AlbumsCell"];
     [popup addSubview:_albumsTableView];
 }
@@ -370,10 +388,6 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     }];
     
     self.assetCollections = assetCollections;
-    if(self.assetCollections.count) {
-        self.assetCollection = self.assetCollections[0];
-        [self.collectionView reloadData];
-    }
 }
 
 #pragma mark - Fetching Assets
@@ -535,6 +549,27 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 
 - (void)photoLibraryDidChange:(PHChange *)changeInstance
 {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Update fetch results
+        NSMutableArray *fetchResults = [self.fetchResults mutableCopy];
+        
+        [self.fetchResults enumerateObjectsUsingBlock:^(PHFetchResult *fetchResult, NSUInteger index, BOOL *stop) {
+            PHFetchResultChangeDetails *changeDetails = [changeInstance changeDetailsForFetchResult:fetchResult];
+            
+            if (changeDetails) {
+                [fetchResults replaceObjectAtIndex:index withObject:changeDetails.fetchResultAfterChanges];
+            }
+        }];
+        
+        if (![self.fetchResults isEqualToArray:fetchResults]) {
+            self.fetchResults = fetchResults;
+            
+            // Reload albums
+            [self updateAssetCollections];
+            [self.albumsTableView reloadData];
+        }
+    });
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         PHFetchResultChangeDetails *collectionChanges = [changeInstance changeDetailsForFetchResult:self.fetchResult];
         
@@ -815,10 +850,29 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 #pragma mark - UITableViewDataSource
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"AlbumsCell" forIndexPath:indexPath];
-    cell.backgroundColor = [UIColor lightGrayColor];
+
+    
 
     PHAssetCollection *assetCollection = self.assetCollections[indexPath.row];
-    cell.textLabel.text = assetCollection.localizedTitle;
+    PHFetchOptions *options = [PHFetchOptions new];
+    
+    switch (self.imagePickerController.mediaType) {
+        case QBImagePickerMediaTypeImage:
+            options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeImage];
+            break;
+            
+        case QBImagePickerMediaTypeVideo:
+            options.predicate = [NSPredicate predicateWithFormat:@"mediaType == %ld", PHAssetMediaTypeVideo];
+            break;
+            
+        default:
+            break;
+    }
+    
+    PHFetchResult *fetchResult = [PHAsset fetchAssetsInAssetCollection:assetCollection options:options];
+    
+    cell.textLabel.text = [NSString stringWithFormat:@"%@ (%lu)", assetCollection.localizedTitle, fetchResult.count];
+    cell.textLabel.font = [UIFont systemFontOfSize:14.0];
     
     return cell;
 }
@@ -832,18 +886,20 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 }
 
 #pragma mark - UITableViewDelegate
-- (void)tableView:(UITableView *)tableView didDeselectRowAtIndexPath:(NSIndexPath *)indexPath {
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:NO];
     
-    [self hideAlbums];
+    NSLog(@"indexPath:%ld", indexPath.row);
+    
     PHAssetCollection *assetCollection = self.assetCollections[indexPath.row];
     self.assetCollection = assetCollection;
     
+    [self hideAlbums];
 }
 
 #pragma mark - UIGestureRecognizerDelegate
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer shouldReceiveTouch:(UITouch *)touch {
-    if(touch.view == _albumsTableView) {
+    if(touch.view == _albumsMaskView) {
         return YES;
     }
     
