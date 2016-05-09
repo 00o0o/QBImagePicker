@@ -278,8 +278,8 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     CGFloat titleWidth = [title sizeWithAttributes:@{NSFontAttributeName: [UIFont systemFontOfSize:18.0]}].width;
     CGFloat imageWidth = image.size.width;
 
-    _titleButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, -(imageWidth * 2), 0.0, 0.0);
-    _titleButton.imageEdgeInsets = UIEdgeInsetsMake(0.0, titleWidth, 0.0, 0.0);
+    _titleButton.titleEdgeInsets = UIEdgeInsetsMake(0.0, -(imageWidth * 2) - 5.0, 0.0, 0.0);
+    _titleButton.imageEdgeInsets = UIEdgeInsetsMake(0.0, 0.0, 0.0, -(titleWidth * 2) - 5.0);
     
     
 }
