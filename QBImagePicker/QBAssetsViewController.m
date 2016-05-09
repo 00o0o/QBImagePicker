@@ -89,11 +89,12 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     _titleButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _titleButton.titleLabel.font = [UIFont systemFontOfSize:18.0];
     [_titleButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [_titleButton addTarget:self action:@selector(showAlbums) forControlEvents:UIControlEventTouchUpInside];
     self.navigationItem.titleView = _titleButton;
     
     if([self.imagePickerController photoLibraryAuthorizationStatus]) {
         {
-            [_titleButton addTarget:self action:@selector(showAlbums) forControlEvents:UIControlEventTouchUpInside];
+            _titleButton.enabled = YES;
             
             // Fetch user albums and smart albums
             PHFetchResult *smartAlbums = [PHAssetCollection fetchAssetCollectionsWithType:PHAssetCollectionTypeSmartAlbum subtype:PHAssetCollectionSubtypeAny options:nil];
@@ -114,6 +115,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
         // Register observer
         [[PHPhotoLibrary sharedPhotoLibrary] registerChangeObserver:self];
     }else {
+        _titleButton.enabled = NO;
         self.collectionView.hidden = YES;
         [[[UIAlertView alloc] initWithTitle:nil message:@"请在iPhone的“设置->隐私->照片”中打开本应用的访问权限" delegate:nil cancelButtonTitle:@"确定" otherButtonTitles:nil, nil] show];
     }
@@ -241,10 +243,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 }
 
 - (void)showAlbums {
-    if(_titleButton.selected) {
-        return;
-    }
-    _titleButton.selected = YES;
+    _titleButton.enabled = NO;
     
     [self.view addSubview:_albumsMaskView];
     [UIView animateWithDuration:0.2 animations:^{
@@ -255,7 +254,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
 }
 
 - (void)hideAlbums {
-    _titleButton.selected = NO;
+    _titleButton.enabled = YES;
     
     [UIView animateWithDuration:0.2 animations:^{
         _albumsMaskView.alpha = 0.0;
@@ -271,7 +270,7 @@ static CGSize CGSizeScale(CGSize size, CGFloat scale) {
     
     [_titleButton setTitle:title forState:UIControlStateNormal];
     [_titleButton setImage:image forState:UIControlStateNormal];
-    [_titleButton setImage:image2 forState:UIControlStateSelected];
+    [_titleButton setImage:image2 forState:UIControlStateDisabled];
     [_titleButton sizeToFit];
 
     
